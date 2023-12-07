@@ -1,0 +1,55 @@
+import requests
+from bs4 import BeautifulSoup
+
+# Define the list of scenes and names to check
+scenes_to_check = [
+    "Feast of a King", "Beautiful Girl", "Reflections", "Lady in Waiting",
+    "Parade", "History of B&K", "Bend or Break", "For Such a Time",
+    "Courage", "Miracle", "Snake in Garden", "Final Hours", "Finale"
+]
+
+names_to_check = ["Aaron H", "Cat M", "Max S", "Rachel W"]
+
+# Function to check if a scene exists for a given name
+def check_scenes_for_name(name, scenes):
+    # Initialize a dictionary to store the results for the name
+    result_dict = {scene: 'X' for scene in scenes}
+
+    # Replace 'https://example.com' with the actual URL of the website
+    url = 'https://coversheet.sight-sound.com/BRANSON_MO'  # Add the actual URL
+
+    # Send a GET request to the URL
+    response = requests.get(url)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Parse the HTML content of the page
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find the tabs corresponding to each name
+        name_tabs = soup.find_all("div", {"class": "person-tab"})  # Adjust the class selector
+
+        # Loop through each name tab
+        for tab in name_tabs:
+            # Extract the name from the tab
+            tab_name = tab.find("div", {"class": "name"}).text.strip()
+
+            # Check if the current tab corresponds to the name we are looking for
+            if tab_name == name:
+                # Find the list of scenes for the current name
+                scene_list = tab.find("ul", {"class": "scene-list"})  # Adjust the class selector
+
+                # Loop through each scene in the list
+                for scene in scenes:
+                    # Check if the scene exists in the list
+                    if scene_list.find("li", string=scene):
+                        result_dict[scene] = ''  # Leave empty if the scene exists
+
+    return result_dict
+
+# Loop through each name and check scenes
+for name in names_to_check:
+    result = check_scenes_for_name(name, scenes_to_check)
+    
+    # Print the results for the current name
+    print(f"Results for {name}: {result}")
